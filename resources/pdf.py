@@ -28,9 +28,10 @@ class UploadPdf(Resource):
 
         file_content = file.read()
         base64_pdf = base64.b64encode(file_content).decode('utf-8')
-
+        
+        client_ip = request.remote_addr
         pdf_item = {
-            'id': str(uuid.uuid4()),
+            'id':f'pdf-{client_ip}',
             'fileName': file.filename,
             'mimeType': file.mimetype,
             'data': base64_pdf,
