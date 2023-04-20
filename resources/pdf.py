@@ -5,20 +5,15 @@ import os
 import uuid
 from azure.cosmos import CosmosClient, PartitionKey
 from dotenv import load_dotenv
+from cosmos_client import create_cosmos_client
+from ingest import run_ingest
 
 load_dotenv()
 
 app = Flask(__name__)
 api = Api(app)
 
-COSMOS_DB_ACCOUNT_URI = os.environ["COSMOS_DB_ACCOUNT_URI"]
-COSMOS_DB_ACCOUNT_KEY = os.environ["COSMOS_DB_ACCOUNT_KEY"]
-DATABASE_ID = os.environ['DATABASE_ID']
-CONTAINER_ID = os.environ['CONTAINER_ID']
-
-client = CosmosClient(COSMOS_DB_ACCOUNT_URI, COSMOS_DB_ACCOUNT_KEY)
-database = client.get_database_client(DATABASE_ID)
-container = database.get_container_client(CONTAINER_ID)
+container = create_cosmos_client()
 
 class UploadPdf(Resource):
     def post(self):
@@ -39,6 +34,7 @@ class UploadPdf(Resource):
 
         try:
             container.upsert_item(pdf_item)
+            run_ingest()
             return {'success': True, 'message': 'File uploaded and stored in Cosmos DB'}, 200
         except Exception as error:
             print(f"Error storing the file in Cosmos DB: {error}")
