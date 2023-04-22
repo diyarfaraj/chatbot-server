@@ -10,16 +10,17 @@ app = Flask(__name__)
 CORS(app)
 api = Api(app)
 
-@api.representation('application/json')
+
+@api.representation("application/json")
 def output_json(data, code, headers=None):
     resp = make_response(json.dumps(data), code)
     resp.headers.extend(headers or {})
     return resp
 
 
-api.add_resource(UploadPdf, '/api/uploadPdf')
-api.add_resource(GetPdf, '/api/getPdf/<string:pdf_id>')
+api.add_resource(UploadPdf, "/api/uploadPdf")
+api.add_resource(GetPdf, "/api/getPdf/<string:pdf_id>")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
