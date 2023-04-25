@@ -7,6 +7,8 @@ from azure.cosmos import CosmosClient, PartitionKey
 from dotenv import load_dotenv
 from cosmos_client import create_cosmos_client
 from ingest import run_ingest
+import PyPDF2
+from io import BytesIO
 
 load_dotenv()
 
@@ -23,25 +25,33 @@ class UploadPdf(Resource):
             return {"error": "No file provided"}, 400
 
         file_content = file.read()
-        base64_pdf = base64.b64encode(file_content).decode("utf-8")
+        pdf_reader = PyPDF2.PdfReader(BytesIO(file_content))
+        pdf_text = ""
+        for page in pdf_reader.pages:
+            pdf_text += page.extract_text()
+
+        text_encoded = pdf_text.encode("utf-8").decode("utf-8")
 
         client_ip = request.remote_addr
         pdf_item = {
             "id": f"pdf-{client_ip}",
             "fileName": file.filename,
             "mimeType": file.mimetype,
-            "data": base64_pdf,
+            "data": text_encoded,
         }
 
         try:
             container.upsert_item(pdf_item)
-            run_ingest()
+            # run_ingest()
             return {
                 "success": True,
                 "message": "File uploaded and stored in Cosmos DB",
             }, 200
         except Exception as error:
+            import traceback
+
             print(f"Error storing the file in Cosmos DB: {error}")
+            print(f"Traceback: {traceback.format_exc()}")
             return {"error": f"Error storing the file in Cosmos DB: {error}"}, 500
 
 
