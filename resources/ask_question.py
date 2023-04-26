@@ -62,7 +62,7 @@ class AskQuestion(Resource):
 
         response = {
             "answer": answer,
-            "sourceDocs": [
+            "source_docs": [
                 {"id": doc_id, "text": documents[i]["text"]}
                 for i, doc_id in sorted_similarities[:3]
             ],
