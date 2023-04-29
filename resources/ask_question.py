@@ -73,4 +73,5 @@ class AskQuestion(Resource):
 
 def fetch_top_document(index, question):
     # Add the code for fetching the top document and its text using Pinecone
+    # TODO: Implement your logic for fetching the top document and its text using Pinecone
     pass
