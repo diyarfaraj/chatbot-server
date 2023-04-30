@@ -2,15 +2,84 @@ import os
 import json
 import pinecone
 import openai
-from flask import request, jsonify
+from flask import request, jsonify, make_response
 from flask_restful import Resource
+from langchain import OpenAI, VectorDBQA
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import Pinecone
+from langchain.document_loaders import TextLoader
+from langchain.chains import RetrievalQA, ConversationalRetrievalChain
+from langchain.memory import ConversationBufferMemory
+from langchain.chains.question_answering import load_qa_chain
+from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
+from langchain.chains import LLMChain
+import pdb
 
 # Initialize Pinecone
-pinecone.init(api_key=os.environ["PINECONE_API_KEY"])
-pinecone.deinit()
+pinecone.init(
+    api_key=os.environ["PINECONE_API_KEY"],
+    environment=os.environ["PINECONE_NAME_SPACE"],
+)
 
 # Initialize OpenAI
 openai.api_key = os.environ["OPENAI_API_KEY"]
+
+
+class AskQuestion(Resource):
+    def get(self):
+        # data = request.get_json()
+
+        question = request.args.get("question")
+        # history = data.get("history", [])
+        print(question)
+        if not question:
+            return jsonify({"message": "No question in the request"}), 400
+
+        embeddings = OpenAIEmbeddings()
+        llm = OpenAI(temperature=0)
+        # Perform similarity search
+        index_name = os.environ["PINECONE_INDEX_NAME"]
+
+        vStore = Pinecone.from_existing_index(
+            index_name=index_name, embedding=embeddings
+        )
+        question_generator = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
+        doc_chain = load_qa_chain(llm, chain_type="map_reduce")
+        retriever = vStore.as_retriever(seach_type="similarity", search_kwrgs={"k": 2})
+        memory = ConversationBufferMemory(
+            memory_key="chat_history",
+            return_messages=True,
+        )
+        qa = ConversationalRetrievalChain(
+            retriever=retriever,
+            question_generator=question_generator,
+            memory=memory,
+            combine_docs_chain=doc_chain,
+        )
+        # documents = docsearch.similarity_search(question)
+        # model = VectorDBQA.from_chain_type(
+        #     llm=OpenAI(), chain_type="map_reduce", vectorstore=vStore
+        # )
+        # Convert Document objects to a JSON serializable format
+        # result = model.run(question)
+
+        result = qa({"question": question})
+        print(result)
+        # pdb.set_trace()
+
+        response = {
+            "answer": result["answer"],
+        }
+        print(response)
+
+        return make_response(jsonify(response), 200)
+
+
+def fetch_top_document(index, question):
+    # Add the code for fetching the top document and its text using Pinecone
+    # TODO: Implement your logic for fetching the top document and its text using Pinecone
+    pass
 
 
 def generate_answer(prompt):
@@ -24,54 +93,3 @@ def generate_answer(prompt):
     )
     answer = response.choices[0].text.strip()
     return answer
-
-
-class AskQuestion(Resource):
-    def post(self):
-        data = request.get_json()
-
-        question = data.get("question")
-        history = data.get("history", [])
-
-        if not question:
-            return jsonify({"message": "No question in the request"}), 400
-
-        # Fetch and process documents
-        # TODO: Implement your logic for fetching documents from your data source (e.g., Cosmos DB)
-
-        # Generate embeddings for the question and documents
-        # TODO: Use the embeddings model of your choice
-        embeddings = OpenAIEmbeddings()
-
-        # Perform similarity search
-        index_name = os.environ["PINECONE_INDEX_NAME"]
-        Pinecone.from_existing_index(docs, embeddings, index_name=index_name)
-        similarities = index.fetch(
-            [question_embedding], ids=[doc["id"] for doc in documents]
-        )
-        sorted_similarities = sorted(
-            similarities.items(), key=lambda x: x[1], reverse=True
-        )
-
-        # Prepare the context for generating the answer
-        context = " ".join([documents[i]["text"] for i, _ in sorted_similarities[:3]])
-        prompt = f"Question: {question}\n\n{context}\n\nAnswer:"
-
-        # Generate the answer
-        answer = generate_answer(prompt)
-
-        response = {
-            "answer": answer,
-            "source_docs": [
-                {"id": doc_id, "text": documents[i]["text"]}
-                for i, doc_id in sorted_similarities[:3]
-            ],
-        }
-
-        return jsonify(response), 200
-
-
-def fetch_top_document(index, question):
-    # Add the code for fetching the top document and its text using Pinecone
-    # TODO: Implement your logic for fetching the top document and its text using Pinecone
-    pass
