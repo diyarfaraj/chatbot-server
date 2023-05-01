@@ -41,7 +41,7 @@ class UploadPdf(Resource):
         }
 
         try:
-            container.upsert_item(pdf_item)
+            # container.upsert_item(pdf_item)
             run_ingest()
             return {
                 "success": True,

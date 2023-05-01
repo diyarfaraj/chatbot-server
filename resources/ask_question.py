@@ -14,6 +14,9 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
 from langchain.chains import LLMChain
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts.prompt import PromptTemplate
+import streamlit as st
 import pdb
 
 # Initialize Pinecone
@@ -24,6 +27,26 @@ pinecone.init(
 
 # Initialize OpenAI
 openai.api_key = os.environ["OPENAI_API_KEY"]
+
+_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
+You can assume the question about the most recent state of the union address.
+Chat History:
+{chat_history}
+Follow Up Input: {question}
+Standalone question:"""
+CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(_template)
+
+template = """You are an AI assistant for answering questions about the most recent state of the union address.
+You are given the following extracted parts of a long document and a question. Provide a conversational answer.
+If you don't know the answer, just say "Hmm, I'm not sure." Don't try to make up an answer.
+If the question is not about the most recent state of the union, politely inform them that you are tuned to only answer questions about the most recent state of the union.
+end each answer with a a smile ":)" 
+Question: {question}
+=========
+{context}
+=========
+Answer in Markdown:"""
+QA_PROMPT = PromptTemplate(template=template, input_variables=["question", "context"])
 
 
 class AskQuestion(Resource):
@@ -37,59 +60,22 @@ class AskQuestion(Resource):
             return jsonify({"message": "No question in the request"}), 400
 
         embeddings = OpenAIEmbeddings()
-        llm = OpenAI(temperature=0)
-        # Perform similarity search
+        llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
         index_name = os.environ["PINECONE_INDEX_NAME"]
 
         vStore = Pinecone.from_existing_index(
             index_name=index_name, embedding=embeddings
         )
-        question_generator = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
-        doc_chain = load_qa_chain(llm, chain_type="map_reduce")
-        retriever = vStore.as_retriever(seach_type="similarity", search_kwrgs={"k": 2})
-        memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True,
-        )
-        qa = ConversationalRetrievalChain(
-            retriever=retriever,
-            question_generator=question_generator,
-            memory=memory,
-            combine_docs_chain=doc_chain,
-        )
-        # documents = docsearch.similarity_search(question)
-        # model = VectorDBQA.from_chain_type(
-        #     llm=OpenAI(), chain_type="map_reduce", vectorstore=vStore
-        # )
-        # Convert Document objects to a JSON serializable format
-        # result = model.run(question)
 
-        result = qa({"question": question})
+        model = VectorDBQA.from_chain_type(
+            llm=llm, chain_type="map_reduce", vectorstore=vStore
+        )
+        # Convert Document objects to a JSON serializable format
+        result = model.run(question)
         print(result)
-        # pdb.set_trace()
 
         response = {
-            "answer": result["answer"],
+            "answer": result,
         }
-        print(response)
 
         return make_response(jsonify(response), 200)
-
-
-def fetch_top_document(index, question):
-    # Add the code for fetching the top document and its text using Pinecone
-    # TODO: Implement your logic for fetching the top document and its text using Pinecone
-    pass
-
-
-def generate_answer(prompt):
-    response = openai.Completion.create(
-        engine="gpt-3.5-turbo",
-        prompt=prompt,
-        max_tokens=100,
-        n=1,
-        stop=None,
-        temperature=0.5,
-    )
-    answer = response.choices[0].text.strip()
-    return answer

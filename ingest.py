@@ -44,14 +44,10 @@ def run_ingest():
     index_name = os.environ["PINECONE_INDEX_NAME"]
     Pinecone.from_documents(docs, embeddings, index_name=index_name)
 
-    # query = "have he worked with react?"
-    # docs = docsearch.similarity_search(query)
-
-    # print(docs[0].page_content)
-
     # pinecone.deinit()
     # Remove the temporary file
     os.unlink(temp_file_path)
+    print("Ingestion complete")
 
 
 def get_pdf_from_cosmos():
