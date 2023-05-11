@@ -1,5 +1,8 @@
 import base64
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import (
+    CharacterTextSplitter,
+    RecursiveCharacterTextSplitter,
+)
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.document_loaders import PyPDFLoader
 from langchain.vectorstores import Pinecone
@@ -11,6 +14,12 @@ load_dotenv()
 # from config import PINECONE_API_KEY, PINECONE_INDEX_NAME, PINECONE_NAME_SPACE
 from cosmos_client import create_cosmos_client
 import tempfile
+
+pinecone.init(
+    api_key=os.environ["PINECONE_API_KEY"],  # find at app.pinecone.io
+    environment=os.environ["PINECONE_NAME_SPACE"],  # next to api key in console
+)
+index_name = os.environ["PINECONE_INDEX_NAME"]
 
 
 def run_ingest():
@@ -30,18 +39,19 @@ def run_ingest():
     raw_docs = loader.load()
 
     # Split text into chunks
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=400, chunk_overlap=0, separators=["\n\n", "\n", " ", ""]
+    )
     docs = text_splitter.split_documents(raw_docs)
+    print("diyar docs 0: ", docs[0])
+    for doc in docs:
+        new_url = doc.metadata["source"]
+        new_url = new_url.replace("langchain-docs", "https:/")
+        doc.metadata.update({"source": new_url})
 
     # Create and store the embeddings in Pinecone
     embeddings = OpenAIEmbeddings()
-
-    pinecone.init(
-        api_key=os.environ["PINECONE_API_KEY"],  # find at app.pinecone.io
-        environment=os.environ["PINECONE_NAME_SPACE"],  # next to api key in console
-    )
-
-    index_name = os.environ["PINECONE_INDEX_NAME"]
+    print(f"Going to add {len(docs)} to Pinecone")
     Pinecone.from_documents(docs, embeddings, index_name=index_name)
 
     # pinecone.deinit()

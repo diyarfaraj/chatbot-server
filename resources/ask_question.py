@@ -89,8 +89,8 @@ class AskQuestion(Resource):
         )
 
         docs = vStore.as_retriever()
-        print(docs)
         # todo: make sure the docs (pineconde insformation ) is returned correctly, seems like a nested structure.
+        # TODO: har laddat upp en doc till python-test men verkar konstigt form. gör en ny ingestion och print info men kommentera ut innan det skickas till pinecone
         # ----------------------------------------------------------------
         chain = load_qa_chain(
             llm,
