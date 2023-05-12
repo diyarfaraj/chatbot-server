@@ -36,18 +36,15 @@ def run_ingest():
 
     # Load the raw PDF content
     loader = PyPDFLoader(temp_file_path)
-    raw_docs = loader.load()
+    raw_docs = loader.load_and_split()
 
     # Split text into chunks
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=400, chunk_overlap=0, separators=["\n\n", "\n", " ", ""]
-    )
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=0)
     docs = text_splitter.split_documents(raw_docs)
-    print("diyar docs 0: ", docs[0])
-    for doc in docs:
-        new_url = doc.metadata["source"]
-        new_url = new_url.replace("langchain-docs", "https:/")
-        doc.metadata.update({"source": new_url})
+    print("diyar docs 0: ", docs[10])
+    # for doc in docs:
+    #     new_url = doc.metadata["source"]
+    #     doc.metadata.update({"source": doc})
 
     # Create and store the embeddings in Pinecone
     embeddings = OpenAIEmbeddings()

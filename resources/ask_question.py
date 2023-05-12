@@ -49,22 +49,21 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 # QA_PROMPT = PromptTemplate(template=template, input_variables=["question", "context"])
 
 question_prompt_template = """Use the following portion of a long document to see if any of the text is relevant to answer the question. 
-Return any relevant text translated into italian.
 {context}
 Question: {question}
-Relevant text, if any, in Italian:"""
+Relevant text, if any, in English:"""
 QUESTION_PROMPT = PromptTemplate(
     template=question_prompt_template, input_variables=["context", "question"]
 )
 
-combine_prompt_template = """Given the following extracted parts of a long document and a question, create a final answer italian. 
+combine_prompt_template = """Given the following extracted parts of a long document and a question 
 If you don't know the answer, just say that you don't know. Don't try to make up an answer.
 
 QUESTION: {question}
 =========
 {summaries}
 =========
-Answer in Italian:"""
+Answer in English:"""
 COMBINE_PROMPT = PromptTemplate(
     template=combine_prompt_template, input_variables=["summaries", "question"]
 )
@@ -75,7 +74,7 @@ class AskQuestion(Resource):
         # data = request.get_json()
 
         question = request.args.get("question")
-        # history = data.get("history", [])
+        history = request.args.get("history", [])
         print(question)
         if not question:
             return jsonify({"message": "No question in the request"}), 400
@@ -88,7 +87,11 @@ class AskQuestion(Resource):
             index_name=index_name, embedding=embeddings
         )
 
+        docsearch = vStore.similarity_search(question)
+        print("docsearch : ", docsearch)
         docs = vStore.as_retriever()
+        # print("vstore as retriver: ", docs)
+
         # todo: make sure the docs (pineconde insformation ) is returned correctly, seems like a nested structure.
         # TODO: har laddat upp en doc till python-test men verkar konstigt form. gör en ny ingestion och print info men kommentera ut innan det skickas till pinecone
         # ----------------------------------------------------------------
@@ -99,18 +102,18 @@ class AskQuestion(Resource):
             question_prompt=QUESTION_PROMPT,
             combine_prompt=COMBINE_PROMPT,
         )
+        print("diyar chain: ", chain)
         result = chain(
-            {"input_documents": docs, "question": question},
+            {"input_documents": docsearch, "question": question},
             return_only_outputs=True,
         )
-        # qa = RetrievalQA.from_chain_type(
-        #     llm=llm,
-        #     chain_type="map_reduce",
-        #     retriever=vStore.as_retriever(),
+        # qa = ConversationalRetrievalChain.from_llm(
+        #     llm=llm, retriever=docs, return_source_documents=True
         # )
-        # result = qa.run(question)
+        # print("diyar result: ", qa)
 
-        print(result)
+        # result = qa({"question": question, "chat_history": history})
+        # print("diyar result: ", result)
 
         response = {
             "answer": result,
