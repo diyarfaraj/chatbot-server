@@ -39,7 +39,7 @@ def run_ingest():
     raw_docs = loader.load_and_split()
 
     # Split text into chunks
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=0)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=400, chunk_overlap=50)
     docs = text_splitter.split_documents(raw_docs)
     print("diyar docs 0: ", docs[10])
     # for doc in docs:
