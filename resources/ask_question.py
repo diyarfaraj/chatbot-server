@@ -94,7 +94,7 @@ class AskQuestion(Resource):
 
         docsearch = vStore.similarity_search(question)
         print("docsearch : ", docsearch)
-        # docs = vStore.as_retriever()
+        # docs = vStore.as_retriever(
         # print("vstore as retriver: ", docs)
 
         # todo: make sure the docs (pineconde insformation ) is returned correctly, seems like a nested structure.
