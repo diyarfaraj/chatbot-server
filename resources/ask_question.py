@@ -82,10 +82,7 @@ class AskQuestion(Resource):
             return jsonify({"message": "No question in the request"}), 400
 
         embeddings = OpenAIEmbeddings()
-        llm = ChatOpenAI(
-            verbose=True,
-            temperature=0,
-        )
+
         index_name = os.environ["PINECONE_INDEX_NAME"]
 
         vStore = Pinecone.from_existing_index(
@@ -93,6 +90,10 @@ class AskQuestion(Resource):
         )
 
         docsearch = vStore.similarity_search(question)
+        llm = ChatOpenAI(
+            verbose=True,
+            temperature=0,
+        )
         print("docsearch : ", docsearch)
         # docs = vStore.as_retriever(
         # print("vstore as retriver: ", docs)
