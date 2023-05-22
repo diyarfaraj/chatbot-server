@@ -106,7 +106,7 @@ class AskQuestion(Resource):
         #     chain_type="stuff",
         #     return_map_steps=True,
         #     question_prompt=QUESTION_PROMPT,
-        #     combine_prompt=COMBINE_PROMPT,
+        #     combine_prompt=COMBINE_PROMPT
         # )
 
         qa = ConversationalRetrievalChain.from_llm(
