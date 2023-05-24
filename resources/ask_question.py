@@ -84,47 +84,27 @@ class AskQuestion(Resource):
         embeddings = OpenAIEmbeddings()
 
         index_name = os.environ["PINECONE_INDEX_NAME"]
+        openai_api_key = os.environ["OPENAI_API_KEY"]
 
-        vStore = Pinecone.from_existing_index(
+        docsearch = Pinecone.from_existing_index(
             index_name=index_name, embedding=embeddings
         )
 
-        docsearch = vStore.similarity_search(question)
-        llm = ChatOpenAI(
-            verbose=True,
-            temperature=0,
-        )
+        llm = OpenAI(verbose=True, temperature=0, openai_api_key=openai_api_key)
         print("docsearch : ", docsearch)
-        # docs = vStore.as_retriever(
-        # print("vstore as retriver: ", docs)
 
-        # todo: make sure the docs (pineconde insformation ) is returned correctly, seems like a nested structure.
-        # look at the next js project
-        # TODO: har laddat upp en doc till python-test men verkar konstigt form. gör en ny ingestion och print info men kommentera ut innan det skickas till pinecone
-        # ----------------------------------------------------------------
-        # chain = load_qa_chain(
-        #     llm,
-        #     chain_type="stuff",
-        #     return_map_steps=True,
-        #     question_prompt=QUESTION_PROMPT,
-        #     combine_prompt=COMBINE_PROMPT
-        # )
-
-        qa = ConversationalRetrievalChain.from_llm(
-            llm=llm, retriever=vStore.as_retriever(), return_source_documents=True
+        chain = load_qa_chain(llm, chain_type="stuff")
+        print("diyar chain: ", chain)
+        docs = docsearch.similarity_search(question)
+        result = chain.run(
+            input_documents=docs,
+            question=question,
         )
-        print("diyar chain: ", qa)
-        result = qa({"question": question, "chat_history": history})
-        # qa = ConversationalRetrievalChain.from_llm(
-        #     llm=llm, retriever=docs, return_source_documents=True
-        # )
-        # print("diyar result: ", qa)
 
-        # result = qa({"question": question, "chat_history": history})
         print("diyar result: ", result)
 
         response = {
-            "answer": result["answer"],
+            "answer": result,
         }
 
         return make_response(jsonify(response), 200)
