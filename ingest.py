@@ -22,7 +22,7 @@ pinecone.init(
 index_name = os.environ["PINECONE_INDEX_NAME"]
 
 
-def run_ingest():
+def run_ingest(pdf_item):
     # Fetch the PDF data from Cosmos DB
     pdf_data = get_pdf_from_cosmos()
 
