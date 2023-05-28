@@ -24,7 +24,9 @@ index_name = os.environ["PINECONE_INDEX_NAME"]
 
 def run_ingest(pdf_item):
     # Fetch the PDF data from Cosmos DB
-    pdf_data = get_pdf_from_cosmos()
+    pdf_data = pdf_item[
+        "data"
+    ]  # TODO: make the data from the PDF file is available and correctly formatted
 
     # Decode the base64 PDF data
     pdf_bytes = base64.b64decode(pdf_data)
