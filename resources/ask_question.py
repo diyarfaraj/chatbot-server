@@ -90,7 +90,7 @@ class AskQuestion(Resource):
             index_name=index_name, embedding=embeddings
         )
 
-        llm = OpenAI(verbose=True, temperature=0, openai_api_key=openai_api_key)
+        llm = OpenAI(verbose=True, temperature=0.5, openai_api_key=openai_api_key)
         print("docsearch : ", docsearch)
 
         chain = load_qa_chain(llm, chain_type="stuff")

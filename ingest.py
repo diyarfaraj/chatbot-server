@@ -9,6 +9,7 @@ from langchain.vectorstores import Pinecone
 import pinecone
 import os
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 # from config import PINECONE_API_KEY, PINECONE_INDEX_NAME, PINECONE_NAME_SPACE
@@ -27,10 +28,12 @@ def run_ingest(pdf_item):
     pdf_data = pdf_item[
         "data"
     ]  # TODO: make the data from the PDF file is available and correctly formatted
-
+    print("diyar pdf data: " + pdf_data)
     # Decode the base64 PDF data
-    pdf_bytes = base64.b64decode(pdf_data)
-
+    clean_pdf_data = re.sub("[^A-Za-z0-9+/]", "", pdf_data)
+    padded_pdf_data = add_base64_padding(clean_pdf_data)
+    pdf_bytes = base64.b64decode(padded_pdf_data)
+    print("diyar pdf_bytes", pdf_bytes)
     # Save the PDF bytes to a temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
         temp_file.write(pdf_bytes)
@@ -43,7 +46,7 @@ def run_ingest(pdf_item):
     # Split text into chunks
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=400, chunk_overlap=50)
     docs = text_splitter.split_documents(raw_docs)
-    print("diyar docs 0: ", docs[10])
+    print("diyar docs 0: ", len(docs))
     # for doc in docs:
     #     new_url = doc.metadata["source"]
     #     doc.metadata.update({"source": doc})
@@ -59,18 +62,23 @@ def run_ingest(pdf_item):
     print("Ingestion complete")
 
 
-def get_pdf_from_cosmos():
-    # Assuming you have a unique PDF in the container
-    container = create_cosmos_client()
-    for item in container.query_items(
-        query='SELECT * FROM c WHERE CONTAINS(c.id, "pdf-")',
-        enable_cross_partition_query=True,
-    ):
-        return item["data"]
-    return None
+# def get_pdf_from_cosmos():
+#     # Assuming you have a unique PDF in the container
+#     container = create_cosmos_client()
+#     for item in container.query_items(
+#         query='SELECT * FROM c WHERE CONTAINS(c.id, "pdf-")',
+#         enable_cross_partition_query=True,
+#     ):
+#         return item["data"]
+#     return None
 
 
-if __name__ == "__main__":
-    print("Ingestion started")
-    run_ingest()
-    print("Ingestion complete")
+# if __name__ == "__main__":
+#     print("Ingestion started")
+#     run_ingest()
+#     print("Ingestion complete")
+def add_base64_padding(b64_string):
+    padding = len(b64_string) % 4
+    if padding > 0:
+        b64_string += "=" * (4 - padding)
+    return b64_string

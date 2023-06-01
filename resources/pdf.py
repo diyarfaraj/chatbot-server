@@ -25,19 +25,14 @@ class UploadPdf(Resource):
             return {"error": "No file provided"}, 400
 
         file_content = file.read()
-        pdf_reader = PyPDF2.PdfReader(BytesIO(file_content))
-        pdf_text = ""
-        for page in pdf_reader.pages:
-            pdf_text += page.extract_text()
-
-        text_encoded = pdf_text.encode("utf-8").decode("utf-8")
+        pdf_bytes = base64.b64encode(file_content)
 
         client_ip = request.remote_addr
         pdf_item = {
             "id": f"pdf-{client_ip}",
             "fileName": file.filename,
             "mimeType": file.mimetype,
-            "data": text_encoded,
+            "data": pdf_bytes.decode("utf-8"),
         }
 
         try:
