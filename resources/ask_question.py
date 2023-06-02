@@ -77,7 +77,6 @@ class AskQuestion(Resource):
 
         question = request.args.get("question")
         history = request.args.get("history", [])
-        print(question)
         if not question:
             return jsonify({"message": "No question in the request"}), 400
 
@@ -90,18 +89,22 @@ class AskQuestion(Resource):
             index_name=index_name, embedding=embeddings
         )
 
-        llm = OpenAI(verbose=True, temperature=0.5, openai_api_key=openai_api_key)
-        print("docsearch : ", docsearch)
+        llm = OpenAI(
+            batch_size=5, verbose=True, temperature=0.5, openai_api_key=openai_api_key
+        )
 
-        chain = load_qa_chain(llm, chain_type="stuff")
-        print("diyar chain: ", chain)
+        chain = load_qa_chain(
+            llm,
+            chain_type="map_reduce",
+            question_prompt=QUESTION_PROMPT,
+            combine_prompt=COMBINE_PROMPT,
+        )
         docs = docsearch.similarity_search(question)
+
         result = chain.run(
             input_documents=docs,
             question=question,
         )
-
-        print("diyar result: ", result)
 
         response = {
             "answer": result,

@@ -12,6 +12,5 @@ response = requests.post(url, data=payload, headers=headers)
 if response.status_code == 200:
     data = response.json()
     # Handle the response data
-    print(data)
 else:
     print("Error:", response.text)
