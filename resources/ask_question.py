@@ -15,6 +15,7 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
 from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
 from langchain.prompts.prompt import PromptTemplate
 import streamlit as st
 import pdb
@@ -48,38 +49,35 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 # Answer in Markdown:"""
 # QA_PROMPT = PromptTemplate(template=template, input_variables=["question", "context"])
 
-question_prompt_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
-
-Chat History:
-{context}
-Follow Up Input: {question}
-Standalone question::"""
-QUESTION_PROMPT = PromptTemplate(
-    template=question_prompt_template, input_variables=["context", "question"]
-)
-
-combine_prompt_template = """Given the following extracted parts of a long document and a question
-If you don't know the answer, just say that you don't know. Don't try to make up an answer.
-
-QUESTION: {question}
-=========
-{summaries}
-=========
-Answer in English:"""
-COMBINE_PROMPT = PromptTemplate(
-    template=combine_prompt_template, input_variables=["summaries", "question"]
-)
-
 
 class AskQuestion(Resource):
     def get(self):
         # data = request.get_json()
 
         question = request.args.get("question")
-        history = request.args.get("history", [])
+        chat_history = request.args.get("history", [])
         if not question:
             return jsonify({"message": "No question in the request"}), 400
+        question_prompt_template = """Use the following portion of a long document to see if any of the text is relevant to answer the question. 
+        Return any relevant text in a professional manner.
+        {context}
+        Question: {question}
+        Relevant text:"""
+        QUESTION_PROMPT = PromptTemplate(
+            template=question_prompt_template, input_variables=["context", "question"]
+        )
 
+        combine_prompt_template = """Given the following extracted parts of a long document and a question, create a final answer as Diyar Farajs AI assistant . 
+        If you don't know the answer, just say that you don't know. Don't try to make up an answer. End each reply with a happy emoji
+
+        QUESTION: {question}
+        =========
+        {summaries}
+        =========
+        Answer:"""
+        COMBINE_PROMPT = PromptTemplate(
+            template=combine_prompt_template, input_variables=["summaries", "question"]
+        )
         embeddings = OpenAIEmbeddings()
 
         index_name = os.environ["PINECONE_INDEX_NAME"]
@@ -92,6 +90,8 @@ class AskQuestion(Resource):
         llm = OpenAI(
             batch_size=5, verbose=True, temperature=0.5, openai_api_key=openai_api_key
         )
+
+        memory = ConversationBufferMemory()
 
         chain = load_qa_chain(
             llm,

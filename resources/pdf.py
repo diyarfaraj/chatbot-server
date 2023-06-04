@@ -39,7 +39,7 @@ class UploadPdf(Resource):
             # container.upsert_item(pdf_item)
             run_ingest(
                 pdf_item
-            )  # TODO: dont get the pdf content from consmos.. just use the file from download
+            ) 
             return {
                 "success": True,
                 "message": "File uploaded and stored in Cosmos DB",
