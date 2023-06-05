@@ -91,7 +91,7 @@ class AskQuestion(Resource):
             batch_size=5, verbose=True, temperature=0.5, openai_api_key=openai_api_key
         )
 
-        memory = ConversationBufferMemory()
+        memory = ConversationBufferMemory()  # add this to the chat
 
         chain = load_qa_chain(
             llm,
