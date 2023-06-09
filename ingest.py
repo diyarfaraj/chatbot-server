@@ -37,7 +37,7 @@ def run_ingest(pdf_item):
         temp_file.write(pdf_bytes)
         temp_file_path = temp_file.name
 
-    # Load the raw PDF content
+    # Load the raw PDF conten
     loader = PyPDFLoader(temp_file_path)
     raw_docs = loader.load_and_split()
 
