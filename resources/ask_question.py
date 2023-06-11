@@ -15,6 +15,8 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
 from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
+from langchain.chains import ConversionChain
+from langchain.chains.conversion.memory import ConversionBufferMemory
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts.prompt import PromptTemplate
 import streamlit as st
