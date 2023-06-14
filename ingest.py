@@ -27,11 +27,13 @@ def run_ingest(pdf_item):
     # Fetch the PDF data from Cosmos DB
     pdf_data = pdf_item["data"]
     print("diyar pdf data: " + pdf_data)
+
     # Decode the base64 PDF data
     clean_pdf_data = re.sub("[^A-Za-z0-9+/]", "", pdf_data)
     padded_pdf_data = add_base64_padding(clean_pdf_data)
     pdf_bytes = base64.b64decode(padded_pdf_data)
     print("diyar pdf_bytes", pdf_bytes)
+
     # Save the PDF bytes to a temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
         temp_file.write(pdf_bytes)
