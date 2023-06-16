@@ -15,8 +15,9 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
 from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
-from langchain.chains import ConversionChain
-from langchain.chains.conversion.memory import ConversionBufferMemory
+
+# from langchain.chains import ConversionChain
+# from langchain.chains.conversion.memory import ConversionBufferMemory
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts.prompt import PromptTemplate
 import streamlit as st
@@ -93,21 +94,20 @@ class AskQuestion(Resource):
             batch_size=5, verbose=True, temperature=0.5, openai_api_key=openai_api_key
         )
 
-        memory = ConversationBufferMemory()  # add this to chat, but with new conversation chain
+        memory = (
+            ConversationBufferMemory()
+        )  # add this to chat, but with new conversation chain
 
-        chain = load_qa_chain(
-            llm,
+        print(docsearch)
+
+        chain = RetrievalQA.from_chain_type(
+            llm=llm,
             chain_type="map_reduce",
-            question_prompt=QUESTION_PROMPT,
-            combine_prompt=COMBINE_PROMPT,
-        )
-        docs = docsearch.similarity_search(question)
-
-        result = chain.run(
-            input_documents=docs,
-            question=question,
+            retriever=docsearch.as_retriever(),
         )
 
+        result = chain.run(query=question)
+        print("diyar result ", result)
         response = {
             "answer": result,
         }
