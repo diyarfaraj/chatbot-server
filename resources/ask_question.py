@@ -102,9 +102,11 @@ class AskQuestion(Resource):
 
         chain = RetrievalQA.from_chain_type(
             llm=llm,
-            chain_type="map_reduce",
+            chain_type="stuff",
             retriever=docsearch.as_retriever(),
         )
+
+        # https://medium.com/@avra42/how-to-build-a-personalized-pdf-chat-bot-with-conversational-memory-965280c160f8 good link for our purpose
 
         result = chain.run(query=question)
         print("diyar result ", result)
