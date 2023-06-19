@@ -96,7 +96,7 @@ class AskQuestion(Resource):
 
         memory = (
             ConversationBufferMemory()
-        )  # add this to chat, but with new conversation chain
+        ) 
 
         print(docsearch)
 
