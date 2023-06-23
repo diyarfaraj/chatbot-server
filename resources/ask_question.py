@@ -109,7 +109,7 @@ class AskQuestion(Resource):
         # https://medium.com/@avra42/how-to-build-a-personalized-pdf-chat-bot-with-conversational-memory-965280c160f8 good link for our purpose
 
         result = chain.run(query=question)
-        print("diyar result ", result)
+        print("real result ", result)
         response = {
             "answer": result,
         }
