@@ -94,16 +94,17 @@ class AskQuestion(Resource):
             batch_size=5, verbose=True, temperature=0.5, openai_api_key=openai_api_key
         )
 
-        memory = (
-            ConversationBufferMemory()
-        ) 
+        memory = ConversationBufferMemory()
 
         print(docsearch)
+
+        # https://stackoverflow.com/questions/76240871/how-do-i-add-memory-to-retrievalqa-from-chain-type-or-how-do-i-add-a-custom-pr for memeory
 
         chain = RetrievalQA.from_chain_type(
             llm=llm,
             chain_type="stuff",
             retriever=docsearch.as_retriever(),
+            verbose=True,
         )
 
         # https://medium.com/@avra42/how-to-build-a-personalized-pdf-chat-bot-with-conversational-memory-965280c160f8 good link for our purpose
