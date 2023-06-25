@@ -58,28 +58,26 @@ class AskQuestion(Resource):
         # data = request.get_json()
 
         question = request.args.get("question")
-        chat_history = request.args.get("history", [])
+        history = request.args.get("history", [])
         if not question:
             return jsonify({"message": "No question in the request"}), 400
-        question_prompt_template = """Use the following portion of a long document to see if any of the text is relevant to answer the question. 
-        Return any relevant text in a professional manner.
+        template = """
+        Use the following context (delimited by <ctx></ctx>) and the chat history (delimited by <hs></hs>) to answer the question:
+        ------
+        <ctx>
         {context}
-        Question: {question}
-        Relevant text:"""
-        QUESTION_PROMPT = PromptTemplate(
-            template=question_prompt_template, input_variables=["context", "question"]
-        )
-
-        combine_prompt_template = """Given the following extracted parts of a long document and a question, create a final answer as Diyar Farajs AI assistant . 
-        If you don't know the answer, just say that you don't know. Don't try to make up an answer. End each reply with a happy emoji
-
-        QUESTION: {question}
-        =========
-        {summaries}
-        =========
-        Answer:"""
-        COMBINE_PROMPT = PromptTemplate(
-            template=combine_prompt_template, input_variables=["summaries", "question"]
+        </ctx>
+        ------
+        <hs>
+        {history}
+        </hs>
+        ------
+        {question}
+        Answer:
+        """
+        prompt = PromptTemplate(
+            input_variables=["history", "context", "question"],
+            template=template,
         )
         embeddings = OpenAIEmbeddings()
 
@@ -105,6 +103,13 @@ class AskQuestion(Resource):
             chain_type="stuff",
             retriever=docsearch.as_retriever(),
             verbose=True,
+            chain_type_kwargs={
+                "verbose": True,
+                "prompt": prompt,
+                "memory": ConversationBufferMemory(
+                    memory_key="history", input_key="question"
+                ),
+            },
         )
 
         # https://medium.com/@avra42/how-to-build-a-personalized-pdf-chat-bot-with-conversational-memory-965280c160f8 good link for our purpose
