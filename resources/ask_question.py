@@ -92,7 +92,7 @@ class AskQuestion(Resource):
             batch_size=5, verbose=True, temperature=0.5, openai_api_key=openai_api_key
         )
 
-        memory = ConversationBufferMemory()
+        memory = ConversationBufferMemory(memory_key="history", input_key="question")
 
         print(docsearch)
 
@@ -106,9 +106,7 @@ class AskQuestion(Resource):
             chain_type_kwargs={
                 "verbose": True,
                 "prompt": prompt,
-                "memory": ConversationBufferMemory(
-                    memory_key="history", input_key="question"
-                ),
+                "memory": memory,
             },
         )
 
