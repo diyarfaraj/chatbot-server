@@ -95,7 +95,7 @@ class AskQuestion(Resource):
             },
         )
 
-        # todo: add my document about me and compare with next.js version
+        # todo: memory is not working properly
 
         # https://medium.com/@avra42/how-to-build-a-personalized-pdf-chat-bot-with-conversational-memory-965280c160f8 good link for our purpose
 
