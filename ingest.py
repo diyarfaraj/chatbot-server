@@ -13,7 +13,7 @@ import re
 
 load_dotenv()
 # from config import PINECONE_API_KEY, PINECONE_INDEX_NAME, PINECONE_NAME_SPACE
-from cosmos_client import create_cosmos_client
+# from cosmos_client import create_cosmos_client
 import tempfile
 
 pinecone.init(

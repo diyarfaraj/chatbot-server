@@ -2,5 +2,38 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "python.formatting.provider": "none"
+  "python.formatting.provider": "none",
+  "appService.zipIgnorePattern": [
+    "__pycache__{,/**}",
+    "*.py[cod]",
+    "*$py.class",
+    ".Python{,/**}",
+    "build{,/**}",
+    "develop-eggs{,/**}",
+    "dist{,/**}",
+    "downloads{,/**}",
+    "eggs{,/**}",
+    ".eggs{,/**}",
+    "lib{,/**}",
+    "lib64{,/**}",
+    "parts{,/**}",
+    "sdist{,/**}",
+    "var{,/**}",
+    "wheels{,/**}",
+    "share/python-wheels{,/**}",
+    "*.egg-info{,/**}",
+    ".installed.cfg",
+    "*.egg",
+    "MANIFEST",
+    ".env{,/**}",
+    ".venv{,/**}",
+    "env{,/**}",
+    "venv{,/**}",
+    "ENV{,/**}",
+    "env.bak{,/**}",
+    "venv.bak{,/**}",
+    ".vscode{,/**}"
+  ],
+  "appService.defaultWebAppToDeploy": "/subscriptions/ee97fa78-d57b-4c30-a6f4-2429237b5a51/resourceGroups/rg-test/providers/Microsoft.Web/sites/chatbot-server",
+  "appService.deploySubpath": "."
 }

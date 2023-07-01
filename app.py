@@ -1,7 +1,6 @@
 from flask import Flask, request, make_response
 from flask_restful import Resource, Api
 from flask_cors import CORS
-from werkzeug.datastructures import FileStorage
 from resources.pdf import UploadPdf, GetPdf
 from resources.ask_question import AskQuestion
 import json
@@ -24,4 +23,4 @@ api.add_resource(GetPdf, "/api/getPdf/<string:pdf_id>")
 api.add_resource(AskQuestion, "/api/ask")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)

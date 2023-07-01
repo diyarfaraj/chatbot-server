@@ -3,9 +3,9 @@ from flask_restful import Resource, Api
 import base64
 import os
 import uuid
-from azure.cosmos import CosmosClient, PartitionKey
 from dotenv import load_dotenv
-from cosmos_client import create_cosmos_client
+
+# from cosmos_client import create_cosmos_client
 from ingest import run_ingest
 import PyPDF2
 from io import BytesIO
@@ -15,7 +15,7 @@ load_dotenv()
 app = Flask(__name__)
 api = Api(app)
 
-container = create_cosmos_client()
+# container = create_cosmos_client()
 
 
 class UploadPdf(Resource):
@@ -37,9 +37,7 @@ class UploadPdf(Resource):
 
         try:
             # container.upsert_item(pdf_item)
-            run_ingest(
-                pdf_item
-            ) 
+            run_ingest(pdf_item)
             return {
                 "success": True,
                 "message": "File uploaded and stored in Cosmos DB",
