@@ -38,7 +38,6 @@ class AskQuestion(Resource):
         # data = request.get_json()
 
         question = request.args.get("question")
-        history = request.args.get("history", [])
         if not question:
             return jsonify({"message": "No question in the request"}), 400
         template = """
@@ -46,7 +45,8 @@ class AskQuestion(Resource):
   Answer the question in the same language as the question is being asked.
    You will provide me with answers from the given info about the man with name Diyar Faraj.
    For each question, scan the whole provided document before you give your answer.
-   Keep your answers as complete as possible, and always be polite and professional.
+   Keep your answers as short as concise, and always be polite and professional.
+   Always summarize the answer.
    If you cant find the answer, say "Mm, can't find any data about it." and beg for the question to be rephrased:
         ------
         <ctx>
@@ -54,18 +54,18 @@ class AskQuestion(Resource):
         </ctx>
         ------
         <hs>
-        {history}
+        {chat_history}
         </hs>
         ------
         {question}
         Answer:
         """
         prompt = PromptTemplate(
-            input_variables=["history", "context", "question"],
+            input_variables=["chat_history", "context", "question"],
             template=template,
         )
-        embeddings = OpenAIEmbeddings()
 
+        embeddings = OpenAIEmbeddings()
         index_name = os.environ["PINECONE_INDEX_NAME"]
         openai_api_key = os.environ["OPENAI_API_KEY"]
 
@@ -77,30 +77,33 @@ class AskQuestion(Resource):
             batch_size=5, verbose=True, temperature=0.5, openai_api_key=openai_api_key
         )
 
-        memory = ConversationBufferMemory(memory_key="history", input_key="question")
+        memory = ConversationBufferMemory(
+            memory_key="chat_history", input_key="question"
+        )
 
         print(docsearch)
 
         # https://stackoverflow.com/questions/76240871/how-do-i-add-memory-to-retrievalqa-from-chain-type-or-how-do-i-add-a-custom-pr for memeory
 
-        chain = RetrievalQA.from_chain_type(
+        chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
             chain_type="stuff",
             retriever=docsearch.as_retriever(),
-            verbose=True,
-            chain_type_kwargs={
-                "verbose": True,
-                "prompt": prompt,
-                "memory": memory,
-            },
+            memory=memory,
+            condense_question_prompt=prompt
+            # chain_type_kwargs={
+            #     "verbose": True,
+            #     "prompt": prompt,
+            #     "memory": memory,
+            # },
         )
 
         # todo: memory is not working properly
 
         # https://medium.com/@avra42/how-to-build-a-personalized-pdf-chat-bot-with-conversational-memory-965280c160f8 good link for our purpose
 
-        result = chain.run(query=question)
-        print("real result ", result)
+        result = chain({"question": question})["answer"]
+        print("chain memory ", chain.memory)
         response = {
             "answer": result,
         }
