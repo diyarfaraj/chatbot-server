@@ -45,8 +45,6 @@ class AskQuestion(Resource):
   Answer the question in the same language as the question is being asked.
    You will provide me with answers from the given info about the man with name Diyar Faraj.
    For each question, scan the whole provided document before you give your answer.
-   Keep your answers as short as concise, and always be polite and professional.
-   Always summarize the answer.
    If you cant find the answer, say "Mm, can't find any data about it." and beg for the question to be rephrased:
         ------
         <ctx>
@@ -83,7 +81,7 @@ class AskQuestion(Resource):
 
         print(docsearch)
 
-        # https://stackoverflow.com/questions/76240871/how-do-i-add-memory-to-retrievalqa-from-chain-type-or-how-do-i-add-a-custom-pr for memeory
+        # https://stackoverflow.com/questions/76240871/how-do-i-add-memory-to-retrievalqa-from-chain-type-or-how-do-i-add-a-custom-pr for memeoryy
 
         chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
