@@ -79,8 +79,6 @@ class AskQuestion(Resource):
             memory_key="chat_history", input_key="question"
         )
 
-        print(docsearch)
-
         # https://stackoverflow.com/questions/76240871/how-do-i-add-memory-to-retrievalqa-from-chain-type-or-how-do-i-add-a-custom-pr for memeoryy
 
         chain = ConversationalRetrievalChain.from_llm(
