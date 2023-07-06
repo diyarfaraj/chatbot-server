@@ -76,7 +76,8 @@ class AskQuestion(Resource):
         )
 
         memory = ConversationBufferMemory(
-            memory_key="chat_history", input_key="question"
+            memory_key="chat_history",
+            return_messages=True,
         )
 
         # https://stackoverflow.com/questions/76240871/how-do-i-add-memory-to-retrievalqa-from-chain-type-or-how-do-i-add-a-custom-pr for memeoryy
@@ -86,19 +87,20 @@ class AskQuestion(Resource):
             chain_type="stuff",
             retriever=docsearch.as_retriever(),
             memory=memory,
-            condense_question_prompt=prompt
-            # chain_type_kwargs={
-            #     "verbose": True,
-            #     "prompt": prompt,
-            #     "memory": memory,
-            # },
+            condense_question_prompt=prompt,
+            combine_docs_chain_kwargs={"prompt": prompt},
         )
 
         # todo: memory is not working properly
 
         # https://medium.com/@avra42/how-to-build-a-personalized-pdf-chat-bot-with-conversational-memory-965280c160f8 good link for our purpose
-
-        result = chain({"question": question})["answer"]
+        chat_history = [
+            (
+                "diyar has one lion and thousands of birds.",
+                "its true",
+            ),
+        ]
+        result = chain({"question": question, "chat_history": chat_history})["answer"]
         print("chain memory ", chain.memory)
         response = {
             "answer": result,
