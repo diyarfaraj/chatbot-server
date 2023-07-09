@@ -94,12 +94,7 @@ class AskQuestion(Resource):
         # todo: memory is not working properly
 
         # https://medium.com/@avra42/how-to-build-a-personalized-pdf-chat-bot-with-conversational-memory-965280c160f8 good link for our purpose
-        chat_history = [
-            (
-                "diyar has one lion and thousands of birds.",
-                "its true",
-            ),
-        ]
+        chat_history = []
         result = chain({"question": question, "chat_history": chat_history})["answer"]
         print("chain memory ", chain.memory)
         response = {
