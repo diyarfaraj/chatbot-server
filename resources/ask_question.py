@@ -9,7 +9,12 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Pinecone
 from langchain.document_loaders import TextLoader
-from langchain.chains import RetrievalQA, ConversationalRetrievalChain
+from langchain.chains import (
+    RetrievalQA,
+    ConversationalRetrievalChain,
+    LLMChain,
+    ConversationChain,
+)
 from langchain.memory import ConversationBufferMemory
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
@@ -40,26 +45,18 @@ class AskQuestion(Resource):
         question = request.args.get("question")
         if not question:
             return jsonify({"message": "No question in the request"}), 400
-        template = """
-        Use the following context (delimited by <ctx></ctx>) and the chat history (delimited by <hs></hs>) to answer the question,  Act as a worldclass helpful and professinal AI assistant.
-  Answer the question in the same language as the question is being asked.
-   You will provide me with answers from the given info about the man with name Diyar Faraj.
-   For each question, scan the whole provided document before you give your answer.
-   If you cant find the answer, say "Mm, can't find any data about it." and beg for the question to be rephrased:
-        ------
-        <ctx>
+        template = """You are a chatbot having a conversation with a human.
+
+        Given the following extracted parts of a long document and a question with your own vast knowledge of everything, create a final answer.
+
         {context}
-        </ctx>
-        ------
-        <hs>
+
         {chat_history}
-        </hs>
-        ------
-        {question}
-        Answer:
-        """
+        Human: {human_input}
+        Chatbot:"""
+
         prompt = PromptTemplate(
-            input_variables=["chat_history", "context", "question"],
+            input_variables=["chat_history", "human_input", "context"],
             template=template,
         )
 
@@ -70,30 +67,24 @@ class AskQuestion(Resource):
         docsearch = Pinecone.from_existing_index(
             index_name=index_name, embedding=embeddings
         )
+        docs = docsearch.similarity_search(question)
 
         llm = OpenAI(
             batch_size=5, verbose=True, temperature=0.5, openai_api_key=openai_api_key
         )
 
         memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True,
+            memory_key="chat_history", input_key="human_input"
         )
 
-        chain = ConversationalRetrievalChain.from_llm(
-            llm=llm,
-            chain_type="stuff",
-            retriever=docsearch.as_retriever(),
-            memory=memory,
-            condense_question_prompt=prompt,
-            combine_docs_chain_kwargs={"prompt": prompt},
-        )
+        chain = load_qa_chain(llm=llm, chain_type="stuff", memory=memory, prompt=prompt)
 
         # todo: memory is not working properly
 
-        chat_history = []
-        result = chain({"question": question, "chat_history": chat_history})["answer"]
-        print("chain memory ", chain.memory)
+        result = chain(
+            {"input_documents": docs, "human_input": question}, return_only_outputs=True
+        )
+        print("chain memory ", chain.memory.buffer)
         response = {
             "answer": result,
         }
