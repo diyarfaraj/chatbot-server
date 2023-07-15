@@ -15,8 +15,6 @@ load_dotenv()
 app = Flask(__name__)
 api = Api(app)
 
-# container = create_cosmos_client()
-
 
 class UploadPdf(Resource):
     def post(self):
@@ -45,9 +43,11 @@ class UploadPdf(Resource):
         except Exception as error:
             import traceback
 
-            print(f"Error storing the file in Cosmos DB: {error}")
+            print(f"Error ingesting or storing the file in Cosmos DB: {error}")
             print(f"Traceback: {traceback.format_exc()}")
-            return {"error": f"Error storing the file in Cosmos DB: {error}"}, 500
+            return {
+                "error": f"Error ingesting or storing the file in Cosmos DB: {error}"
+            }, 500
 
 
 class GetPdf(Resource):
