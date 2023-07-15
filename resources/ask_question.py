@@ -45,9 +45,12 @@ class AskQuestion(Resource):
         question = request.args.get("question")
         if not question:
             return jsonify({"message": "No question in the request"}), 400
-        template = """You are a chatbot having a conversation with a human.
-
-        Given the following extracted parts of a long document and a question with your own vast knowledge of everything, create a final answer.
+        template = """You are a worldclass helpful and professinal AI assistant.
+        Answer the question in the same language as the question is being asked.
+        You will provide me with answers from the given info about the man with name Diyar Faraj.
+        For each question, scan the whole provided document before you give your answer.
+        Keep your answers as complete as possible, and always be polite and professional.
+        If you cant find the answer, say "Mm, can't find any data about it." and beg for the question to be rephrased.
 
         {context}
 
