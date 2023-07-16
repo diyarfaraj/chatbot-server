@@ -1,0 +1,25 @@
+version: "3"
+services:
+  chatbot_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+
+  nginx:
+    build:
+      context: /nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+      - "443:443"
+    volumes:
+      - ./cert/cert.pem:/etc/nginx/certs/cert.pem
+      - ./cert/key.pem:/etc/nginx/certs/key.pem
+    depends_on:
+      - chatbot_server
+volumes:
+  nginx_certs:
