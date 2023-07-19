@@ -22,7 +22,6 @@ index_name = os.environ["PINECONE_INDEX_NAME"]
 
 
 def run_ingest(pdf_item):
-    # Fetch the PDF data from Cosmos DB
     pdf_data = pdf_item["data"]
     print("diyar pdf data: " + pdf_data)
 
@@ -49,6 +48,7 @@ def run_ingest(pdf_item):
     embeddings = OpenAIEmbeddings()
     print(f"Going to add {len(docs)} to Pinecone")
 
+    # Check if we already have indexes, remove them
     indexes = pinecone.list_indexes()
     if len(indexes) > 0:
         pinecone.delete_index(index_name)
