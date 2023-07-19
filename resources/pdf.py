@@ -4,10 +4,7 @@ import base64
 import os
 import uuid
 from dotenv import load_dotenv
-
-# from cosmos_client import create_cosmos_client
 from ingest import run_ingest
-import PyPDF2
 from io import BytesIO
 
 load_dotenv()
@@ -38,28 +35,11 @@ class UploadPdf(Resource):
             run_ingest(pdf_item)
             return {
                 "success": True,
-                "message": "File uploaded and stored in Cosmos DB",
+                "message": "Successfully returned from ingestion",
             }, 200
         except Exception as error:
             import traceback
 
-            print(f"Error ingesting or storing the file in Cosmos DB: {error}")
+            print(f"Error ingesting file : {error}")
             print(f"Traceback: {traceback.format_exc()}")
-            return {
-                "error": f"Error ingesting or storing the file in Cosmos DB: {error}"
-            }, 500
-
-
-class GetPdf(Resource):
-    def get(self, pdf_id):
-        try:
-            pdf_item = container.read_item(item=pdf_id, partition_key=pdf_id)
-            return {
-                "id": pdf_item["id"],
-                "fileName": pdf_item["fileName"],
-                "mimeType": pdf_item["mimeType"],
-                "data": pdf_item["data"],
-            }, 200
-        except Exception as error:
-            print(f"Error retrieving the PDF from Cosmos DB: {error}")
-            return {"error": f"Error retrieving the PDF from Cosmos DB: {error}"}, 500
+            return {"error": f"Error ingesting file: {error}"}, 500

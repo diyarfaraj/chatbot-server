@@ -1,7 +1,7 @@
 from flask import Flask, request, make_response
 from flask_restful import Resource, Api
 from flask_cors import CORS
-from resources.pdf import UploadPdf, GetPdf
+from resources.pdf import UploadPdf
 from resources.ask_question import AskQuestion
 import json
 
@@ -19,7 +19,6 @@ def output_json(data, code, headers=None):
 
 
 api.add_resource(UploadPdf, "/api/uploadPdf")
-api.add_resource(GetPdf, "/api/getPdf/<string:pdf_id>")
 api.add_resource(AskQuestion, "/api/ask")
 
 if __name__ == "__main__":

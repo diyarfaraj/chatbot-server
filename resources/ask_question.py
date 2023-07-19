@@ -25,8 +25,7 @@ from langchain.chat_models import ChatOpenAI
 # from langchain.chains.conversion.memory import ConversionBufferMemory
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts.prompt import PromptTemplate
-import streamlit as st
-import pdb
+import cosmos_client
 
 # Initialize Pinecone
 pinecone.init(
@@ -39,6 +38,8 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
 class AskQuestion(Resource):
+    cosmos_container = cosmos_client.create_cosmos_client()
+
     def get(self):
         # data = request.get_json()
 
@@ -51,6 +52,7 @@ class AskQuestion(Resource):
         For each question, scan the whole provided document before you give your answer.
         Keep your answers as complete as possible, and always be polite and professional.
         If you cant find the answer, say "Mm, can't find any data about it." and beg for the question to be rephrased.
+        Answer the question in the same language as the question. 
 
         {context}
 
@@ -83,11 +85,17 @@ class AskQuestion(Resource):
         chain = load_qa_chain(llm=llm, chain_type="stuff", memory=memory, prompt=prompt)
 
         # todo: memory is not working properly
-
         result = chain(
             {"input_documents": docs, "human_input": question}, return_only_outputs=True
         )
         print("chain memory ", chain.memory.buffer)
+
+        # save question and answer in cosmosDB
+        client_ip = request.remote_addr
+        cosmos_client.save_question_answer(
+            self.cosmos_container, question, result["output_text"], client_ip
+        )
+
         response = {
             "answer": result,
         }
