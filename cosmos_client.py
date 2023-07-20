@@ -37,7 +37,11 @@ def save_question_answer(container, question, answer, ip):
 
         # If the item exists, append the new chat
         if "chat" in item:
-            item["chat"].append(new_chat)
+            if isinstance(item["chat"], list):
+                item["chat"].append(new_chat)
+            else:
+                print(f"Unexpected type for 'chat': {type(item['chat'])}")
+                item["chat"] = [new_chat]  # overwrite with a new list
         else:
             item["chat"] = [new_chat]
 

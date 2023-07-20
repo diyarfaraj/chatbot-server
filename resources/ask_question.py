@@ -91,7 +91,8 @@ class AskQuestion(Resource):
         print("chain memory ", chain.memory.buffer)
 
         # save question and answer in cosmosDB
-        client_ip = request.remote_addr
+        client_ip = request.headers.get("Client-IP")
+
         cosmos_client.save_question_answer(
             self.cosmos_container, question, result["output_text"], client_ip
         )
