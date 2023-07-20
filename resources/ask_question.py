@@ -25,7 +25,7 @@ from langchain.chat_models import ChatOpenAI
 # from langchain.chains.conversion.memory import ConversionBufferMemory
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts.prompt import PromptTemplate
-import cosmos_client
+import utils.cosmos_client
 
 # Initialize Pinecone
 pinecone.init(
@@ -38,7 +38,7 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
 class AskQuestion(Resource):
-    cosmos_container = cosmos_client.create_cosmos_client()
+    cosmos_container = utils.cosmos_client.create_cosmos_client()
 
     def get(self):
         # data = request.get_json()
@@ -93,7 +93,7 @@ class AskQuestion(Resource):
         # save question and answer in cosmosDB
         client_ip = request.headers.get("Client-IP")
 
-        cosmos_client.save_question_answer(
+        utils.cosmos_client.save_question_answer(
             self.cosmos_container, question, result["output_text"], client_ip
         )
 

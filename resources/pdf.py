@@ -1,11 +1,8 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
 import base64
-import os
-import uuid
 from dotenv import load_dotenv
-from ingest import run_ingest
-from io import BytesIO
+from utils.ingest import run_ingest
 
 load_dotenv()
 
