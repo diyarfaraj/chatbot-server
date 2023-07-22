@@ -10,6 +10,13 @@ app = Flask(__name__)
 CORS(app)
 api = Api(app)
 
+# TODO: make these configurable:
+# create members account
+# openai api key
+# system message
+# pinecone info
+# azure cosnmos info
+
 
 @api.representation("application/json")
 def output_json(data, code, headers=None):
