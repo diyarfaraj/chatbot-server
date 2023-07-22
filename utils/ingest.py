@@ -15,10 +15,10 @@ load_dotenv()
 import tempfile
 
 pinecone.init(
-    api_key=os.environ["PINECONE_API_KEY"],  # find at app.pinecone.io
-    environment=os.environ["PINECONE_NAME_SPACE"],  # next to api key in console
+    api_key=os.environ["TEST_PINECONE_API_KEY"],  # find at app.pinecone.io
+    environment=os.environ["TEST_PINECONE_NAME_SPACE"],  # next to api key in console
 )
-index_name = os.environ["PINECONE_INDEX_NAME"]
+index_name = os.environ["TEST_PINECONE_INDEX_NAME"]
 
 
 def run_ingest(pdf_item):
@@ -51,6 +51,7 @@ def run_ingest(pdf_item):
     # Check if we already have indexes, remove them
     indexes = pinecone.list_indexes()
     if len(indexes) > 0:
+        print("diyar empty index >>>>>>>>", indexes)
         pinecone.delete_index(index_name)
 
     pinecone.create_index(
@@ -59,7 +60,7 @@ def run_ingest(pdf_item):
 
     Pinecone.from_documents(docs, embeddings, index_name=index_name)
 
-    pinecone.deinit()
+    # pinecone.deinit()
     # Remove the temporary file
     os.unlink(temp_file_path)
     print("Ingestion complete")
