@@ -5,15 +5,14 @@ from datetime import datetime
 import azure.cosmos.exceptions
 
 
-def create_cosmos_client():
+def create_cosmos_client(container_id):
     COSMOS_DB_ACCOUNT_URI = os.environ["COSMOS_DB_ACCOUNT_URI"]
     COSMOS_DB_ACCOUNT_KEY = os.environ["COSMOS_DB_ACCOUNT_KEY"]
     DATABASE_ID = os.environ["DATABASE_ID"]
-    CONTAINER_ID = os.environ["CONTAINER_ID"]
 
     client = CosmosClient(COSMOS_DB_ACCOUNT_URI, COSMOS_DB_ACCOUNT_KEY)
     database = client.get_database_client(DATABASE_ID)
-    container = database.get_container_client(CONTAINER_ID)
+    container = database.get_container_client(container_id)
 
     return container
 

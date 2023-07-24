@@ -7,10 +7,12 @@ openai==0.27.2
 pinecone_client==2.2.1
 PyPDF2==3.0.1
 python-dotenv==1.0.0
-reportlab==3.6.12
+reportlab==4.0.4
 Requests==2.31.0
 streamlit==1.22.0
 Werkzeug==2.2.3
 azure-core==1.26.4
 azure-cosmos==4.3.1
 ipinfo==4.4.2
+python-jose==3.3.0
+PyJWT==2.8.0

@@ -38,7 +38,7 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
 class AskQuestion(Resource):
-    cosmos_container = utils.cosmos_client.create_cosmos_client()
+    cosmos_container = utils.cosmos_client.create_cosmos_client("messages")
 
     def get(self):
         # data = request.get_json()
