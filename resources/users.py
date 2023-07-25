@@ -5,7 +5,7 @@ from flask_restful import Resource, reqparse
 from utils.cosmos_client import create_cosmos_client
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# import jwt
+import jwt
 import datetime
 from flask import jsonify, make_response
 
@@ -52,16 +52,16 @@ class UserLogin(Resource):
             return {"message": "User not found"}, 404
 
         if check_password_hash(user["password"], data["password"]):
-            # token = jwt.encode(
-            #     {
-            #         "username": user["username"],
-            #         "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
-            #     },
-            #     SECRET_KEY,
-            #     algorithm="HS256",
-            # )
+            token = jwt.encode(
+                {
+                    "username": user["username"],
+                    "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
+                },
+                SECRET_KEY,
+                algorithm="HS256",
+            )
 
-            return "login in success", 200
+            return {"token": token}, 200
 
         return {"message": "Password is incorrect"}, 401
 
