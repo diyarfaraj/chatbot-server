@@ -13,7 +13,7 @@ def create_cosmos_client():
 
     client = CosmosClient(COSMOS_DB_ACCOUNT_URI, COSMOS_DB_ACCOUNT_KEY)
     database = client.get_database_client(DATABASE_ID)
-    container = database.get_container_client(CONTAINER_ID)
+    container = database.get_container_client("messages")
 
     return container
 
