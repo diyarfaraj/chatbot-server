@@ -59,7 +59,6 @@ def run_ingest(pdf_item):
 
     Pinecone.from_documents(docs, embeddings, index_name=index_name)
 
-    pinecone.deinit()
     # Remove the temporary file
     os.unlink(temp_file_path)
     print("Ingestion complete")

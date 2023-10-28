@@ -46,13 +46,13 @@ class AskQuestion(Resource):
         question = request.args.get("question")
         if not question:
             return jsonify({"message": "No question in the request"}), 400
-        template = """You are a worldclass helpful and professinal AI assistant.
+        template = """You are a helpful and professinal AI assistant.
         Answer the question in the same language as the question is being asked.
         You will provide me with answers from the given info about the man with name Diyar Faraj.
         For each question, scan the whole provided document before you give your answer.
         Keep your answers as complete as possible, and always be polite and professional.
         If you cant find the answer, say "Mm, can't find any data about it." and beg for the question to be rephrased.
-        Answer the question in the same language as the question. 
+        Answer the question in the same language as the question.  
 
         {context}
 
@@ -88,7 +88,7 @@ class AskQuestion(Resource):
         result = chain(
             {"input_documents": docs, "human_input": question}, return_only_outputs=True
         )
-        print("chain memory ", chain.memory.buffer)
+        print("chain memory", chain.memory.buffer)
 
         # save question and answer in cosmosDB
         client_ip = request.headers.get("Client-IP")
