@@ -92,8 +92,12 @@ class AskQuestion(Resource):
 
         # save question and answer in cosmosDB
         client_ip = request.headers.get("Client-IP")
+        print(client_ip)
         if client_ip is None:
             client_ip = "127.0.0.1"
+
+        if ":" in client_ip:
+            client_ip = client_ip.split(":")[0]
 
         utils.cosmos_client.save_question_answer(
             self.cosmos_container, question, result["output_text"], client_ip
